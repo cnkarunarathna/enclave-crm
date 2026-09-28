@@ -23,6 +23,3 @@ SECURE_HSTS_PRELOAD = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_REFERRER_POLICY = "same-origin"
-
-# TODO(phase 1): base sets the envelope renderer (JSON only); dev.py appends the
-# browsable API renderer, so prod needs no renderer override.

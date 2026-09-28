@@ -51,3 +51,7 @@ DJANGO_SETTINGS_MODULE = "config.settings.dev"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-ra --strict-markers"
+filterwarnings = [
+    # WhiteNoise warns when collectstatic has not run; irrelevant for API tests.
+    "ignore:No directory at:UserWarning",
+]

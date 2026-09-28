@@ -17,3 +17,9 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 STORAGES["staticfiles"] = {  # noqa: F405
     "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
 }
+
+# Browsable API for poking at endpoints in the browser (prod stays JSON only).
+REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [  # noqa: F405
+    *REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"],  # noqa: F405
+    "rest_framework.renderers.BrowsableAPIRenderer",
+]

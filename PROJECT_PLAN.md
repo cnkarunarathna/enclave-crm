@@ -889,10 +889,10 @@ ADR-lite entries for every row in §3 plus any deviation. AWS doc contains §10'
 - Commit e.g.: `chore: scaffold backend, frontend and docker compose`
 
 ### Phase 1: Core, tenancy, users, auth (~2 h)
-- [ ] `core`: tenancy ContextVar, managers, `TenantModel`, `TenantContextMiddleware`, `RolePermission`, `IsSameOrganization`, `OrganizationScopedViewSet`, pagination, renderer, exception handler, health endpoint
-- [ ] `organizations`: `Organization`, `User` (+manager, check constraint), `roles.py` (matrix + `capabilities_for`), migrations, admin
-- [ ] Auth endpoints: login (custom claims, throttle), refresh, logout (blacklist), me
-- [ ] `conftest.py` + `test_auth.py`, `test_envelope.py`
+- [x] `core`: tenancy ContextVar, managers, `TenantModel`, `TenantContextMiddleware`, `RolePermission`, `IsSameOrganization`, `OrganizationScopedViewSet`, pagination, renderer, exception handler, health endpoint
+- [x] `organizations`: `Organization`, `User` (+manager, check constraint), `roles.py` (matrix + `capabilities_for`), migrations, admin
+- [x] Auth endpoints: login (custom claims, throttle), refresh, logout (blacklist), me
+- [x] `conftest.py` + `test_auth.py`, `test_envelope.py`
 - **Done when:** curl login returns tokens; `/auth/me` returns capabilities; no token → `401` in envelope; tests green.
 - Commits: `feat(core): tenant base model, managers, middleware`, `feat(auth): JWT login/refresh/logout/me`
 
