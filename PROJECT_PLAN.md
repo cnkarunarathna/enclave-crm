@@ -941,7 +941,7 @@ ADR-lite entries for every row in §3 plus any deviation. AWS doc contains §10'
 ### Phase 8: Production readiness & CI (~1.5 h)
 - [ ] `backend/Dockerfile`, `frontend/Dockerfile` + `nginx.conf`, `docker-compose.prod.yml`, `.dockerignore`s
 - [ ] `prod.py` hardening verified with `manage.py check --deploy`
-- [ ] GitHub Actions CI green on `main`
+- [ ] GitHub Actions CI green on `main` _(workflow added early, before Phase 3; runs on PRs into `main` + pushes to `main`)_
 - [ ] Fresh-clone test: clone into a new folder, follow README exactly, everything works
 - **Done when:** CI badge green; `docker compose -f docker-compose.prod.yml up --build` serves the app.
 
