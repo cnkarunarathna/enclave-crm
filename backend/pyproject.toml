@@ -1,0 +1,53 @@
+[project]
+name = "crm-backend"
+version = "0.1.0"
+description = "Multi-tenant CRM API (Django REST Framework)"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3==1.43.103",
+    "django==5.2.17",
+    "django-cors-headers==4.9.0",
+    "django-environ==0.14.0",
+    "django-filter==26.1",
+    "django-storages[s3]==1.14.6",
+    "djangorestframework==3.18.1",
+    "djangorestframework-simplejwt==5.5.1",
+    "drf-spectacular==0.30.0",
+    "pillow==12.3.0",
+    "psycopg[binary]==3.3.6",
+    "whitenoise==6.12.0",
+]
+
+[dependency-groups]
+dev = [
+    "factory-boy==3.3.3",
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+    "pytest-django==4.14.0",
+    "ruff==0.16.9",
+]
+prod = [
+    "gunicorn==26.2.0",
+]
+
+[tool.uv]
+# Not a distributable package: just an app with locked dependencies.
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["**/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "DJ", "S"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.dev"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra --strict-markers"

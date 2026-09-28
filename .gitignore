@@ -1,1 +1,35 @@
-PROJECT_PLAN.md
+# Secrets: never commit real env files
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.sqlite3
+
+# Django
+backend/media/
+backend/staticfiles/
+media/
+
+# Node
+node_modules/
+dist/
+coverage/
+*.log
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+#DOCS
+docs/
