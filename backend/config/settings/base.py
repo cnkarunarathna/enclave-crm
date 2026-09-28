@@ -116,11 +116,17 @@ STORAGES = {
 
 if env.bool("USE_S3", default=False):
     # Private bucket; logo_url is a short-lived presigned GET URL.
+    AWS_S3_REGION = env("AWS_S3_REGION_NAME")
     STORAGES["default"] = {
         "BACKEND": "storages.backends.s3.S3Storage",
         "OPTIONS": {
             "bucket_name": env("AWS_STORAGE_BUCKET_NAME"),
-            "region_name": env("AWS_S3_REGION_NAME"),
+            "region_name": AWS_S3_REGION,
+            # Sign URLs for the regional host (bucket.s3.<region>.amazonaws.com). The global
+            # host answers new non-us-east-1 buckets with a 307 redirect, which breaks the
+            # signature, so logo URLs would fail to load.
+            "endpoint_url": f"https://s3.{AWS_S3_REGION}.amazonaws.com",
+            "addressing_style": "virtual",
             # Empty -> None -> boto3 default credential chain (IAM role in prod).
             "access_key": env("AWS_ACCESS_KEY_ID", default=None) or None,
             "secret_key": env("AWS_SECRET_ACCESS_KEY", default=None) or None,

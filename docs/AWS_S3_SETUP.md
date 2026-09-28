@@ -180,3 +180,16 @@ To go back to local files at any time, set `USE_S3=False`.
   `AWS_SECRET_ACCESS_KEY` empty. boto3 picks up the role automatically.
 - **Costs:** a handful of small logos is far inside any free allowance. The budget alert from step 3
   emails you if anything is ever charged.
+
+## Troubleshooting
+
+- **Logo URL fails right after creating the bucket (HTTP 307 `TemporaryRedirect`).** New buckets
+  outside `us-east-1` redirect requests sent to the global host `bucket.s3.amazonaws.com`, and the
+  redirect breaks the URL signature. The settings therefore sign URLs for the regional host
+  (`endpoint_url = https://s3.<region>.amazonaws.com`), so this cannot happen as long as
+  `AWS_S3_REGION_NAME` matches the bucket's region.
+- **Upload fails with 403 on a missing file.** The IAM user lacks `s3:ListBucket` (step 6).
+- **`SignatureDoesNotMatch`.** The secret key was pasted with a space or quote, or belongs to a
+  different access key id. Recreate the key and paste both values again.
+- **Tests never use S3.** `tests/conftest.py` forces local temporary storage even when
+  `USE_S3=True`, so running tests costs nothing and leaves the bucket untouched.
