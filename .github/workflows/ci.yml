@@ -1,6 +1,6 @@
 name: CI
 
-# Runs on every PR into main (e.g. dev -> main) and on pushes to main after merge.
+# Runs on every PR into master (e.g. dev -> master) and on pushes to master after merge.
 on:
   pull_request:
     branches: [master]
@@ -45,7 +45,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v10
+      # setup-uv has no moving major tag (v10) since v8, so pin the exact release.
+      - uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
@@ -76,6 +77,8 @@ jobs:
   frontend:
     name: Frontend (lint, typecheck, tests, build)
     runs-on: ubuntu-latest
+    env:
+      HUSKY: 0 # git hooks are for local machines; don't install them in CI
     defaults:
       run:
         working-directory: frontend

@@ -20,7 +20,7 @@ cp .env.example .env
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 
-make install          # uv sync (backend) + npm ci (frontend)
+make install          # uv sync (backend) + npm ci (frontend, also installs git hooks)
 make up               # Postgres 16 on localhost:5433
 
 make backend-dev      # http://localhost:8000
@@ -35,6 +35,19 @@ make frontend-dev     # http://localhost:5173 (in a second terminal)
 | `make lint` | ruff check/format check, ESLint, `tsc`, Prettier check |
 | `make fmt` | Auto-fix formatting (ruff, Prettier) |
 | `make migrate` / `make makemigrations` | Django migrations |
+
+## Git hooks (husky)
+
+The same checks as CI run locally, so problems are caught before a push:
+
+| Hook | Runs |
+|---|---|
+| `pre-commit` (~2 s) | ruff lint + format check, ESLint, Prettier check, `tsc` |
+| `pre-push` (~10 s) | migrations check, pytest (needs `make up`), Vitest, frontend build |
+
+Hooks are installed by `npm ci` in `frontend/`. Fix formatting failures with `make fmt`.
+Bypass in an emergency with `--no-verify`. If your editor's git can't find `uv` or `npm`,
+add your PATH to `~/.config/husky/init.sh`.
 
 Backend dependencies are managed with uv: add one with `cd backend && uv add <pkg>`
 (or `uv add --dev <pkg>`), which updates `pyproject.toml` and `uv.lock`.

@@ -1,0 +1,11 @@
+# Slower checks (same as CI) before code leaves your machine. Runs from the repo root.
+# Backend tests need Postgres: start it with `make up`.
+
+echo "pre-push: backend migrations check + tests"
+(cd backend \
+  && uv run python manage.py makemigrations --check --dry-run \
+  && uv run pytest -q) \
+  || { echo "Backend checks failed. Is Postgres running? (make up)"; exit 1; }
+
+echo "pre-push: frontend tests + build"
+(cd frontend && npm test && npm run -s build)
