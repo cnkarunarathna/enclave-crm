@@ -916,9 +916,9 @@ ADR-lite entries for every row in §3 plus any deviation. AWS doc contains §10'
 - **Done when:** logo upload works locally (FileSystemStorage) and on S3.
 
 ### Phase 5: Seed, API docs, hardening (~1.25 h)
-- [ ] `seed_demo` command (§14), `test_seed.py`
-- [ ] drf-spectacular schema + Swagger (`/api/v1/docs/`), tags and descriptions
-- [ ] Throttle test, security settings review, structured logging, `ruff` clean, coverage report
+- [x] `seed_demo` command (§14), `test_seed.py`
+- [x] drf-spectacular schema + Swagger (`/api/v1/docs/`), tags and descriptions
+- [x] Throttle test, security settings review, structured logging, `ruff` clean, coverage report
 - **Done when:** `make seed` then login works as all six users; Swagger renders; `make test` green.
 
 ### Phase 6: Frontend foundation (~1.5 h)

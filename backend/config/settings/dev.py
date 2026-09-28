@@ -23,3 +23,5 @@ REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [  # noqa: F405
     *REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"],  # noqa: F405
     "rest_framework.renderers.BrowsableAPIRenderer",
 ]
+
+API_DOCS_ENABLED = env.bool("API_DOCS_ENABLED", default=True)

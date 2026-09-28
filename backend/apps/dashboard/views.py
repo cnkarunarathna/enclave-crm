@@ -1,4 +1,6 @@
 from django.db.models import Count
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,6 +17,31 @@ class DashboardStatsView(APIView):
 
     permission_classes = [IsAuthenticated, HasOrganization]
 
+    @extend_schema(
+        tags=["dashboard"],
+        responses=inline_serializer(
+            "DashboardStats",
+            {
+                "organization": inline_serializer(
+                    "DashboardOrganization",
+                    {"name": serializers.CharField(), "subscription_plan": serializers.CharField()},
+                ),
+                "totals": inline_serializer(
+                    "DashboardTotals",
+                    {
+                        "companies": serializers.IntegerField(),
+                        "contacts": serializers.IntegerField(),
+                    },
+                ),
+                "companies_by_industry": inline_serializer(
+                    "IndustryCount",
+                    {"industry": serializers.CharField(), "count": serializers.IntegerField()},
+                    many=True,
+                ),
+                "recent_activity": ActivityLogSerializer(many=True),
+            },
+        ),
+    )
     def get(self, request):
         user = request.user
         org = user.organization

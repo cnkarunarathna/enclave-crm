@@ -74,3 +74,25 @@ Each entry: the decision, the alternatives considered, and why. Locked decisions
   a missing key only if the caller has `ListBucket`; the `s3:prefix` condition key exists only on
   list requests, so with the condition the check gets 403 and the upload fails. The bucket stores
   only logos, so listing it reveals nothing extra.
+
+## D-009: Trust `X-Forwarded-For` only from a configured number of proxies
+
+- **Decision:** `REST_FRAMEWORK["NUM_PROXIES"] = TRUSTED_PROXY_COUNT` (default 0 = use the socket
+  address; set to 1 behind a single nginx or load balancer).
+- **Why:** DRF's default (`None`) uses the client-supplied `X-Forwarded-For` header as the client
+  identity for throttling, so an attacker could send a new fake IP on every request and get
+  unlimited login attempts. `test_hardening.py` proves the limit holds even with spoofed headers.
+
+## D-010: API docs are off in production by default
+
+- **Decision:** `/api/v1/schema/` and `/api/v1/docs/` are only routed when `API_DOCS_ENABLED=True`
+  (default on in dev, off in prod).
+- **Why:** Plan §8.5 asks for docs to be restricted or disabled in prod. Not routing them at all is
+  the simplest option; a deployment can turn them on explicitly.
+
+## D-011: JSON logs in production
+
+- **Decision:** `LOG_FORMAT` selects `text` (dev default) or `json` (prod default), implemented by a
+  20-line `JsonFormatter` in `apps/core/log_formatters.py` instead of a logging library.
+- **Why:** Log platforms can filter JSON by level, logger and status code without parsing free text;
+  a small formatter avoids adding a dependency.
