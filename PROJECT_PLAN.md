@@ -897,8 +897,8 @@ ADR-lite entries for every row in §3 plus any deviation. AWS doc contains §10'
 - Commits: `feat(core): tenant base model, managers, middleware`, `feat(auth): JWT login/refresh/logout/me`
 
 ### Phase 2: Activity log + CRM models (~1.25 h)
-- [ ] `activity`: model, `log_activity`/`bulk_log_activity`, serializer, filterset, read-only viewset, migrations
-- [ ] `crm`: `Company`, `Contact` (constraints, indexes), `storage.py` upload path, admin, migrations
+- [x] `activity`: model, `log_activity`/`bulk_log_activity`, serializer, filterset, read-only viewset, migrations
+- [x] `crm`: `Company`, `Contact` (constraints, indexes), `storage.py` upload path, admin, migrations
 - **Done when:** migrations apply on a fresh DB; constraint tests for partial unique index pass.
 
 ### Phase 3: CRM API (~1.75 h)

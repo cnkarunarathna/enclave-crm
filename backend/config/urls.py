@@ -9,6 +9,7 @@ from apps.core.views import HealthView
 
 api_v1 = [
     path("auth/", include("apps.organizations.urls")),
+    path("", include("apps.activity.urls")),
     path("health/", HealthView.as_view(), name="health"),
 ]
 

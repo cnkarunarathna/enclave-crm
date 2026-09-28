@@ -3,26 +3,9 @@ from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.forms import BaseUserCreationForm
 from django.contrib.auth.forms import UserChangeForm as DjangoUserChangeForm
 
+from apps.core.admin import SuperuserOnlyMixin
+
 from .models import Organization, User
-
-
-class SuperuserOnlyMixin:
-    """Tenants and users are platform-level data: only superusers may see them."""
-
-    def has_module_permission(self, request):
-        return request.user.is_superuser
-
-    def has_view_permission(self, request, obj=None):
-        return request.user.is_superuser
-
-    def has_add_permission(self, request):
-        return request.user.is_superuser
-
-    def has_change_permission(self, request, obj=None):
-        return request.user.is_superuser
-
-    def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
 
 
 @admin.register(Organization)

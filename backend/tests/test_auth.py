@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from apps.organizations.models import User
 from apps.organizations.tokens import issue_tokens
 
-from .conftest import PASSWORD
+from .factories import PASSWORD
 
 LOGIN = "/api/v1/auth/login/"
 REFRESH = "/api/v1/auth/refresh/"

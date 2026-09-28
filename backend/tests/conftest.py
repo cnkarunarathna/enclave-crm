@@ -7,11 +7,11 @@ import pytest
 from django.core.cache import cache
 from rest_framework.test import APIClient
 
-from apps.organizations.models import Organization, User
+from apps.organizations.models import Organization
 from apps.organizations.roles import Role
 from apps.organizations.tokens import issue_tokens
 
-PASSWORD = "Passw0rd!123"
+from .factories import make_user
 
 
 @pytest.fixture(autouse=True)
@@ -24,12 +24,6 @@ def _clear_cache():
 def _media_root(settings, tmp_path):
     # Uploaded files go to a temp dir, never the real media/ folder or S3.
     settings.MEDIA_ROOT = tmp_path / "media"
-
-
-def make_user(email, organization, role):
-    return User.objects.create_user(
-        email=email, password=PASSWORD, organization=organization, role=role
-    )
 
 
 @pytest.fixture
