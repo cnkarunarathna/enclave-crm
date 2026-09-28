@@ -1,0 +1,8 @@
+# Fast static checks (same as CI). Runs from the repo root.
+# Fix formatting with `make fmt`. Skip in an emergency with `git commit --no-verify`.
+
+echo "pre-commit: backend lint + format check"
+(cd backend && uv run ruff check . && uv run ruff format --check .)
+
+echo "pre-commit: frontend lint + format check + typecheck"
+(cd frontend && npm run -s lint && npm run -s format:check && npm run -s typecheck)

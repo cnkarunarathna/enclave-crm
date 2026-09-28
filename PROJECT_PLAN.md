@@ -889,16 +889,16 @@ ADR-lite entries for every row in §3 plus any deviation. AWS doc contains §10'
 - Commit e.g.: `chore: scaffold backend, frontend and docker compose`
 
 ### Phase 1: Core, tenancy, users, auth (~2 h)
-- [ ] `core`: tenancy ContextVar, managers, `TenantModel`, `TenantContextMiddleware`, `RolePermission`, `IsSameOrganization`, `OrganizationScopedViewSet`, pagination, renderer, exception handler, health endpoint
-- [ ] `organizations`: `Organization`, `User` (+manager, check constraint), `roles.py` (matrix + `capabilities_for`), migrations, admin
-- [ ] Auth endpoints: login (custom claims, throttle), refresh, logout (blacklist), me
-- [ ] `conftest.py` + `test_auth.py`, `test_envelope.py`
+- [x] `core`: tenancy ContextVar, managers, `TenantModel`, `TenantContextMiddleware`, `RolePermission`, `IsSameOrganization`, `OrganizationScopedViewSet`, pagination, renderer, exception handler, health endpoint
+- [x] `organizations`: `Organization`, `User` (+manager, check constraint), `roles.py` (matrix + `capabilities_for`), migrations, admin
+- [x] Auth endpoints: login (custom claims, throttle), refresh, logout (blacklist), me
+- [x] `conftest.py` + `test_auth.py`, `test_envelope.py`
 - **Done when:** curl login returns tokens; `/auth/me` returns capabilities; no token → `401` in envelope; tests green.
 - Commits: `feat(core): tenant base model, managers, middleware`, `feat(auth): JWT login/refresh/logout/me`
 
 ### Phase 2: Activity log + CRM models (~1.25 h)
-- [ ] `activity`: model, `log_activity`/`bulk_log_activity`, serializer, filterset, read-only viewset, migrations
-- [ ] `crm`: `Company`, `Contact` (constraints, indexes), `storage.py` upload path, admin, migrations
+- [x] `activity`: model, `log_activity`/`bulk_log_activity`, serializer, filterset, read-only viewset, migrations
+- [x] `crm`: `Company`, `Contact` (constraints, indexes), `storage.py` upload path, admin, migrations
 - **Done when:** migrations apply on a fresh DB; constraint tests for partial unique index pass.
 
 ### Phase 3: CRM API (~1.75 h)
@@ -941,7 +941,7 @@ ADR-lite entries for every row in §3 plus any deviation. AWS doc contains §10'
 ### Phase 8: Production readiness & CI (~1.5 h)
 - [ ] `backend/Dockerfile`, `frontend/Dockerfile` + `nginx.conf`, `docker-compose.prod.yml`, `.dockerignore`s
 - [ ] `prod.py` hardening verified with `manage.py check --deploy`
-- [ ] GitHub Actions CI green on `main`
+- [ ] GitHub Actions CI green on `main` _(workflow added early, before Phase 3; runs on PRs into `main` + pushes to `main`)_
 - [ ] Fresh-clone test: clone into a new folder, follow README exactly, everything works
 - **Done when:** CI badge green; `docker compose -f docker-compose.prod.yml up --build` serves the app.
 

@@ -46,8 +46,7 @@ INSTALLED_APPS = [
     "apps.dashboard",
 ]
 
-# TODO(phase 1): AUTH_USER_MODEL = "organizations.User"
-# Must be set before the first `migrate`; do not run migrations until then.
+AUTH_USER_MODEL = "organizations.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -57,7 +56,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    # TODO(phase 1): "apps.core.middleware.TenantContextMiddleware",
+    "apps.core.middleware.TenantContextMiddleware",  # sets the current org from the JWT
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -145,10 +144,11 @@ REST_FRAMEWORK = {
     ],
     # Secure by default: every endpoint needs a token unless it opts out.
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
-    # TODO(phase 1): envelope renderer, exception handler and pagination:
-    # "DEFAULT_RENDERER_CLASSES": ["apps.core.renderers.EnvelopeJSONRenderer"],
-    # "EXCEPTION_HANDLER": "apps.core.exceptions.api_exception_handler",
-    # "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardPagination",
+    # Consistent {"success", "message", "data" | "code", "errors"} envelope.
+    "DEFAULT_RENDERER_CLASSES": ["apps.core.renderers.EnvelopeJSONRenderer"],
+    "EXCEPTION_HANDLER": "apps.core.exceptions.api_exception_handler",
+    "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardPagination",
+    "PAGE_SIZE": 10,
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
