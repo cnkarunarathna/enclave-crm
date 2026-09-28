@@ -24,6 +24,14 @@ class RolePermission(BasePermission):
         return user.role in allowed_roles
 
 
+class HasOrganization(BasePermission):
+    """For endpoints every role may use (e.g. dashboard), but only as a tenant member."""
+
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(user and user.is_authenticated and user.organization_id)
+
+
 class IsSameOrganization(BasePermission):
     """Object-level backstop: querysets are already org-scoped, this double-checks."""
 

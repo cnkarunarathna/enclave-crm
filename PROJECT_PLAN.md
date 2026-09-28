@@ -902,15 +902,15 @@ ADR-lite entries for every row in §3 plus any deviation. AWS doc contains §10'
 - **Done when:** migrations apply on a fresh DB; constraint tests for partial unique index pass.
 
 ### Phase 3: CRM API (~1.75 h)
-- [ ] Serializers (tenant-scoped `company` field, validators, `logo_url`, `contacts_count`)
-- [ ] `services.py` (create/update/delete for both models, audit, cascade)
-- [ ] Viewsets, `filters.py`, URL routing under `/api/v1/`, dashboard stats endpoint
-- [ ] Tests: companies, contacts, validation, soft delete, activity log, RBAC matrix, tenant isolation, dashboard
+- [x] Serializers (tenant-scoped `company` field, validators, `logo_url`, `contacts_count`)
+- [x] `services.py` (create/update/delete for both models, audit, cascade)
+- [x] Viewsets, `filters.py`, URL routing under `/api/v1/`, dashboard stats endpoint
+- [x] Tests: companies, contacts, validation, soft delete, activity log, RBAC matrix, tenant isolation, dashboard
 - **Done when:** all §12 backend tests for these areas pass; a cross-tenant ID returns `404`; each write yields the right log rows.
 - Commits: `feat(crm): company and contact services with audit logging`, `feat(crm): viewsets, filters, pagination`, `test: tenant isolation and rbac matrix`
 
 ### Phase 4: S3 storage & logos (~1 h)
-- [ ] Storage switch in settings (§10), logo validators, replace/remove logo behavior, `on_commit` cleanup
+- [x] Storage switch in settings (§10), logo validators, replace/remove logo behavior, `on_commit` cleanup _(done in Phase 3: the company service needed them)_
 - [ ] Manual verification with real bucket (`HUMAN:` provides keys): upload → object appears under `org-{id}/logos/`; `logo_url` opens; bucket is not public; a URL after expiry fails
 - [ ] `docs/AWS_S3_SETUP.md`
 - **Done when:** logo upload works locally (FileSystemStorage) and on S3.

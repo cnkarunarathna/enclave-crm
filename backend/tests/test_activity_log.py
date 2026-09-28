@@ -10,8 +10,9 @@ from apps.activity.services import (
     log_activity,
     snapshot,
 )
+from apps.crm.models import Company
 
-from .factories import make_company, make_contact
+from .factories import make_company, make_contact, make_image
 
 URL = "/api/v1/activity-logs/"
 Action = ActivityLog.Action
@@ -148,3 +149,114 @@ def test_log_is_read_only_over_the_api(auth_client, admin_a, logs):
     assert client.patch(detail, {"action": "DELETE"}, format="json").status_code == 403
     assert client.delete(detail).status_code == 403
     assert ActivityLog.objects.count() == 3
+
+
+# --- Every write endpoint is audited -----------------------------------------
+
+
+def only_log():
+    assert ActivityLog.objects.count() == 1
+    return ActivityLog.objects.get()
+
+
+def test_company_create_update_delete_are_logged(auth_client, admin_a):
+    client = auth_client(admin_a)
+
+    created = client.post("/api/v1/companies/", {"name": "Acme", "industry": "Tech"}, format="json")
+    company_id = created.json()["data"]["id"]
+    entry = only_log()
+    assert (entry.action, entry.model_name, entry.object_id) == ("CREATE", "Company", company_id)
+    assert entry.user == admin_a
+    assert entry.changes["name"] == {"new": "Acme"}
+    ActivityLog.objects.all().delete()
+
+    client.patch(f"/api/v1/companies/{company_id}/", {"name": "Acme Ltd"}, format="json")
+    entry = only_log()
+    assert entry.action == "UPDATE"
+    assert entry.changes == {"name": {"old": "Acme", "new": "Acme Ltd"}}
+    ActivityLog.objects.all().delete()
+
+    client.delete(f"/api/v1/companies/{company_id}/")
+    entry = only_log()
+    assert (entry.action, entry.object_repr) == ("DELETE", "Acme Ltd")
+
+
+def test_contact_create_update_delete_are_logged(auth_client, admin_a):
+    client = auth_client(admin_a)
+    company = make_company(admin_a.organization)
+
+    created = client.post(
+        "/api/v1/contacts/",
+        {"company": company.pk, "full_name": "Jane", "email": "jane@example.com"},
+        format="json",
+    )
+    contact_id = created.json()["data"]["id"]
+    entry = only_log()
+    assert (entry.action, entry.model_name, entry.object_id) == ("CREATE", "Contact", contact_id)
+    assert entry.changes["company"] == {"new": company.pk}
+    ActivityLog.objects.all().delete()
+
+    client.patch(f"/api/v1/contacts/{contact_id}/", {"phone": "12345678"}, format="json")
+    assert only_log().changes == {"phone": {"old": "", "new": "12345678"}}
+    ActivityLog.objects.all().delete()
+
+    client.delete(f"/api/v1/contacts/{contact_id}/")
+    assert only_log().action == "DELETE"
+
+
+def test_company_delete_logs_each_cascaded_contact(auth_client, admin_a):
+    company = make_company(admin_a.organization)
+    contacts = [make_contact(company, email=f"c{i}@example.com") for i in range(3)]
+    make_contact(company, email="old@example.com", is_deleted=True)  # already gone: not logged
+
+    auth_client(admin_a).delete(f"/api/v1/companies/{company.pk}/")
+
+    deletes = ActivityLog.objects.filter(action="DELETE")
+    assert deletes.count() == 4
+    assert deletes.filter(model_name="Company", object_id=company.pk).count() == 1
+    assert sorted(
+        deletes.filter(model_name="Contact").values_list("object_id", flat=True)
+    ) == sorted(c.pk for c in contacts)
+
+
+def test_logo_change_is_logged_as_storage_key(auth_client, admin_a):
+    res = auth_client(admin_a).post(
+        "/api/v1/companies/", {"name": "Logo Co", "logo": make_image()}, format="multipart"
+    )
+    logged_logo = only_log().changes["logo"]["new"]
+
+    assert logged_logo.startswith(f"org-{admin_a.organization_id}/logos/")
+    assert "X-Amz" not in logged_logo and "http" not in logged_logo
+    assert res.status_code == 201
+
+
+def test_failed_log_write_rolls_back_the_change(auth_client, admin_a, monkeypatch):
+    def broken_log(**kwargs):
+        raise RuntimeError("audit store down")
+
+    monkeypatch.setattr("apps.crm.services.log_activity", broken_log)
+
+    res = auth_client(admin_a).post("/api/v1/companies/", {"name": "Unaudited"}, format="json")
+
+    assert res.status_code == 500
+    assert "audit store" not in res.json()["message"]
+    assert not Company.all_objects.filter(name="Unaudited").exists()
+
+
+def test_rejected_writes_are_not_logged(auth_client, staff_a, admin_a):
+    auth_client(staff_a).post("/api/v1/companies/", {"name": "Nope"}, format="json")  # 403
+    auth_client(admin_a).post("/api/v1/companies/", {}, format="json")  # 400
+
+    assert not ActivityLog.objects.exists()
+
+
+def test_list_query_count_does_not_grow_with_rows(
+    auth_client, admin_a, django_assert_max_num_queries
+):
+    company = make_company(admin_a.organization)
+    for _ in range(10):
+        log_activity(user=admin_a, action=Action.UPDATE, obj=company)
+    client = auth_client(admin_a)
+
+    with django_assert_max_num_queries(4):
+        client.get(URL)
