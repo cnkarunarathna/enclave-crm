@@ -21,9 +21,15 @@ def _clear_cache():
 
 
 @pytest.fixture(autouse=True)
-def _media_root(settings, tmp_path):
-    # Uploaded files go to a temp dir, never the real media/ folder or S3.
+def _local_storage(settings, tmp_path):
+    # Uploaded files go to a temp dir, never the real media/ folder or S3,
+    # even when backend/.env has USE_S3=True.
+    settings.STORAGES = {
+        **settings.STORAGES,
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    }
     settings.MEDIA_ROOT = tmp_path / "media"
+    settings.MEDIA_URL = "/media/"
 
 
 @pytest.fixture

@@ -116,11 +116,17 @@ STORAGES = {
 
 if env.bool("USE_S3", default=False):
     # Private bucket; logo_url is a short-lived presigned GET URL.
+    AWS_S3_REGION = env("AWS_S3_REGION_NAME")
     STORAGES["default"] = {
         "BACKEND": "storages.backends.s3.S3Storage",
         "OPTIONS": {
             "bucket_name": env("AWS_STORAGE_BUCKET_NAME"),
-            "region_name": env("AWS_S3_REGION_NAME"),
+            "region_name": AWS_S3_REGION,
+            # Sign URLs for the regional host (bucket.s3.<region>.amazonaws.com). The global
+            # host answers new non-us-east-1 buckets with a 307 redirect, which breaks the
+            # signature, so logo URLs would fail to load.
+            "endpoint_url": f"https://s3.{AWS_S3_REGION}.amazonaws.com",
+            "addressing_style": "virtual",
             # Empty -> None -> boto3 default credential chain (IAM role in prod).
             "access_key": env("AWS_ACCESS_KEY_ID", default=None) or None,
             "secret_key": env("AWS_SECRET_ACCESS_KEY", default=None) or None,
@@ -156,6 +162,10 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_THROTTLE_RATES": {"login": "10/min"},
+    # How many reverse proxies (nginx, load balancer) sit in front of the app. Throttling
+    # identifies clients by IP; with the DRF default (None) a client could send any
+    # X-Forwarded-For value and dodge the login rate limit. 0 = use the socket address.
+    "NUM_PROXIES": env.int("TRUSTED_PROXY_COUNT", default=0),
 }
 
 SIMPLE_JWT = {
@@ -167,11 +177,31 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
+# OpenAPI schema + Swagger UI. On in dev, off in prod unless API_DOCS_ENABLED=True.
+API_DOCS_ENABLED = env.bool("API_DOCS_ENABLED", default=False)
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "Multi-Tenant CRM API",
-    "DESCRIPTION": "Companies, contacts and audit log, isolated per organization.",
+    "DESCRIPTION": (
+        "Companies, contacts and an audit log, isolated per organization.\n\n"
+        "**Auth:** call `POST /api/v1/auth/login/`, then use **Authorize** with the `access` "
+        "token (no `Bearer ` prefix needed).\n\n"
+        "**Response envelope:** every response is wrapped as "
+        '`{"success", "message", "data", "meta"}` (errors: `{"success": false, "message", '
+        '"code", "errors"}`). The schemas below show the inner `data` only.'
+    ),
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,  # separate request/response schemas (file uploads)
+    "SCHEMA_PATH_PREFIX": "/api/v1",
+    "TAGS": [
+        {"name": "auth", "description": "Login, token refresh, logout, current user."},
+        {"name": "companies", "description": "Companies of your organization."},
+        {"name": "contacts", "description": "Contacts of your organization's companies."},
+        {"name": "activity-logs", "description": "Read-only audit trail (Admin, Manager)."},
+        {"name": "dashboard", "description": "Headline numbers for your organization."},
+        {"name": "health", "description": "Liveness and database check."},
+    ],
 }
 
 # --- CORS -------------------------------------------------------------------
@@ -188,15 +218,17 @@ X_FRAME_OPTIONS = "DENY"
 # --- Logging ----------------------------------------------------------------
 
 LOG_LEVEL = env("LOG_LEVEL", default="INFO")
+LOG_FORMAT = env("LOG_FORMAT", default="text")  # "text" for humans, "json" for log platforms
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "simple": {"format": "%(asctime)s %(levelname)s %(name)s: %(message)s"},
+        "text": {"format": "%(asctime)s %(levelname)s %(name)s: %(message)s"},
+        "json": {"()": "apps.core.log_formatters.JsonFormatter"},
     },
     "handlers": {
-        "console": {"class": "logging.StreamHandler", "formatter": "simple"},
+        "console": {"class": "logging.StreamHandler", "formatter": LOG_FORMAT},
     },
     "root": {"handlers": ["console"], "level": LOG_LEVEL},
     "loggers": {

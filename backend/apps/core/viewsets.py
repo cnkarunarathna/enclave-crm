@@ -18,6 +18,9 @@ class OrganizationScopedMixin:
     model = None
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            # OpenAPI schema generation runs without a real user; nothing is queried.
+            return self.model.objects.none()
         return self.model.objects.for_org(self.request.user.organization_id)
 
 

@@ -55,3 +55,12 @@ filterwarnings = [
     # WhiteNoise warns when collectstatic has not run; irrelevant for API tests.
     "ignore:No directory at:UserWarning",
 ]
+
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/migrations/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 90  # CI fails if coverage drops below this

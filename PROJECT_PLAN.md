@@ -911,14 +911,14 @@ ADR-lite entries for every row in §3 plus any deviation. AWS doc contains §10'
 
 ### Phase 4: S3 storage & logos (~1 h)
 - [x] Storage switch in settings (§10), logo validators, replace/remove logo behavior, `on_commit` cleanup _(done in Phase 3: the company service needed them)_
-- [ ] Manual verification with real bucket (`HUMAN:` provides keys): upload → object appears under `org-{id}/logos/`; `logo_url` opens; bucket is not public; a URL after expiry fails
-- [ ] `docs/AWS_S3_SETUP.md`
+- [x] Manual verification with real bucket (`HUMAN:` provides keys): upload → object appears under `org-{id}/logos/`; `logo_url` opens; bucket is not public; a URL after expiry fails _(verified 2026-09-29 against the real bucket in eu-north-1: 16/16 checks; UI check follows in Phase 7)_
+- [x] `docs/AWS_S3_SETUP.md`
 - **Done when:** logo upload works locally (FileSystemStorage) and on S3.
 
 ### Phase 5: Seed, API docs, hardening (~1.25 h)
-- [ ] `seed_demo` command (§14), `test_seed.py`
-- [ ] drf-spectacular schema + Swagger (`/api/v1/docs/`), tags and descriptions
-- [ ] Throttle test, security settings review, structured logging, `ruff` clean, coverage report
+- [x] `seed_demo` command (§14), `test_seed.py`
+- [x] drf-spectacular schema + Swagger (`/api/v1/docs/`), tags and descriptions
+- [x] Throttle test, security settings review, structured logging, `ruff` clean, coverage report
 - **Done when:** `make seed` then login works as all six users; Swagger renders; `make test` green.
 
 ### Phase 6: Frontend foundation (~1.5 h)
