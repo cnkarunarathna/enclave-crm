@@ -3,9 +3,9 @@ name: CI
 # Runs on every PR into main (e.g. dev -> main) and on pushes to main after merge.
 on:
   pull_request:
-    branches: [main]
+    branches: [master]
   push:
-    branches: [main]
+    branches: [master]
 
 # A new push to the same PR cancels the run that is still in progress.
 concurrency:
