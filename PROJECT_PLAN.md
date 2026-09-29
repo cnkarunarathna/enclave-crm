@@ -946,8 +946,8 @@ ADR-lite entries for every row in §3 plus any deviation. AWS doc contains §10'
 - **Done when:** CI badge green; `docker compose -f docker-compose.prod.yml up --build` serves the app.
 
 ### Phase 9: Documentation (~1.25 h)
-- [ ] `README.md`, `docs/ARCHITECTURE.md`, `docs/SRS.md`, `docs/DECISIONS.md`, `docs/RECORDING_SCRIPT.md`
-- [ ] Screenshots optional (login, companies, activity log)
+- [x] `README.md`, `docs/ARCHITECTURE.md`, `docs/SRS.md`, `docs/DECISIONS.md`, `docs/RECORDING_SCRIPT.md` _(DECISIONS now also records every §3 locked decision as L-01…L-15)_
+- [x] Screenshots optional (login, companies, activity log) _(`docs/screenshots/`: dashboard, companies, company detail, activity log, mobile)_
 - **Done when:** a stranger could run and understand the project from the README alone.
 
 ### Phase 10: Rehearse, record, submit (~2.5 h) `HUMAN`
