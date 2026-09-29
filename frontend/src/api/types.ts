@@ -51,6 +51,11 @@ export interface CompanyInput {
   remove_logo?: boolean
 }
 
+export interface CompanyFacets {
+  industries: string[]
+  countries: string[]
+}
+
 export interface Contact {
   id: number
   company: number

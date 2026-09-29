@@ -1,5 +1,5 @@
 import { api, cleanParams, getData, getPage } from './client'
-import type { Company, CompanyInput, ListParams } from './types'
+import type { Company, CompanyFacets, CompanyInput, ListParams } from './types'
 
 /** Send multipart only when a file is involved; JSON otherwise. */
 function toPayload(input: Partial<CompanyInput>) {
@@ -20,6 +20,9 @@ function toPayload(input: Partial<CompanyInput>) {
 export const companiesApi = {
   list: (params: ListParams) =>
     getPage<Company>(api.get('/companies/', { params: cleanParams(params) })),
+
+  /** Distinct industries/countries in use, for the filter dropdowns. */
+  facets: () => getData<CompanyFacets>(api.get('/companies/facets/')),
 
   get: (id: number) => getData<Company>(api.get(`/companies/${id}/`)),
 

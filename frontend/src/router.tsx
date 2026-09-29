@@ -3,15 +3,13 @@ import { createBrowserRouter } from 'react-router-dom'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { PublicOnlyRoute } from '@/components/auth/PublicOnlyRoute'
 import { RoleGate } from '@/components/auth/RoleGate'
+import { FullPageSpinner } from '@/components/common/FullPageSpinner'
 import { AppLayout } from '@/components/layout/AppLayout'
-import { ActivityLogPage } from '@/pages/ActivityLogPage'
-import { CompaniesPage } from '@/pages/CompaniesPage'
-import { CompanyDetailPage } from '@/pages/CompanyDetailPage'
-import { DashboardPage } from '@/pages/DashboardPage'
-import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
+// Pages behind login are loaded on first visit (code splitting), so the login
+// screen doesn't download the tables, forms and charts of the whole app.
 export const router = createBrowserRouter([
   {
     path: '/login',
@@ -28,17 +26,38 @@ export const router = createBrowserRouter([
         <AppLayout />
       </ProtectedRoute>
     ),
+    // Shown on first load while the page's code is being fetched.
+    HydrateFallback: FullPageSpinner,
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'companies', element: <CompaniesPage /> },
-      { path: 'companies/:id', element: <CompanyDetailPage /> },
+      {
+        index: true,
+        lazy: async () => ({ Component: (await import('@/pages/DashboardPage')).DashboardPage }),
+      },
+      {
+        path: 'companies',
+        lazy: async () => ({ Component: (await import('@/pages/CompaniesPage')).CompaniesPage }),
+      },
+      {
+        path: 'companies/:id',
+        lazy: async () => ({
+          Component: (await import('@/pages/CompanyDetailPage')).CompanyDetailPage,
+        }),
+      },
       {
         path: 'activity',
-        element: (
-          <RoleGate resource="activity_log" verb="read" fallback={<ForbiddenPage />}>
-            <ActivityLogPage />
-          </RoleGate>
-        ),
+        lazy: async () => {
+          const [{ ActivityLogPage }, { ForbiddenPage }] = await Promise.all([
+            import('@/pages/ActivityLogPage'),
+            import('@/pages/ForbiddenPage'),
+          ])
+          return {
+            element: (
+              <RoleGate resource="activity_log" verb="read" fallback={<ForbiddenPage />}>
+                <ActivityLogPage />
+              </RoleGate>
+            ),
+          }
+        },
       },
       { path: '*', element: <NotFoundPage /> },
     ],

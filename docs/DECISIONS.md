@@ -129,3 +129,19 @@ Each entry: the decision, the alternatives considered, and why. Locked decisions
 - **Why:** `/auth/me/` (session restore) and `/auth/logout/` are ordinary authenticated calls; an
   expired access token there should refresh transparently too. Login and refresh are the auth
   flow itself, and retrying them would loop.
+
+## D-015: `GET /companies/facets/` for the industry and country filters
+
+- **Decision:** A read-only viewset action returns the distinct, non-empty industries and countries
+  of the user's organization (soft-deleted companies excluded). `ACTION_TO_VERB` maps `facets` to
+  `read`, so every role that can list companies can use it.
+- **Alternatives:** Free-text filter inputs (the API filters with `iexact`, so users would have to
+  type exact values), or deriving options from the dashboard's top-8 industries (incomplete).
+- **Why:** Dropdowns with real values are the usable form of an exact-match filter; the endpoint is
+  a few lines and follows the same tenant scoping and RBAC as the rest of the API.
+
+## D-016: Route-level code splitting
+
+- **Decision:** Pages behind login are loaded with React Router `lazy` routes.
+- **Why:** The single bundle had grown past Vite's 500 kB warning. With lazy routes the login screen
+  loads ~150 kB gzipped and each page fetches its own small chunk on first visit.

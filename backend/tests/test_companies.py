@@ -222,3 +222,27 @@ def test_list_query_count_does_not_grow_with_rows(
     # auth user + count + page (+ savepoint noise); never one query per row.
     with django_assert_max_num_queries(4):
         client.get(URL)
+
+
+# --- Facets (filter options) --------------------------------------------------
+
+
+def test_facets_list_distinct_values_of_own_org_only(auth_client, staff_a, admin_b):
+    org = staff_a.organization
+    make_company(org, name="A", industry="Travel", country="India")
+    make_company(org, name="B", industry="Hospitality", country="India")
+    make_company(org, name="C", industry="", country="Sri Lanka")
+    make_company(org, name="Gone", industry="Mining", country="Chile", is_deleted=True)
+    make_company(admin_b.organization, name="Other", industry="Finance", country="Japan")
+
+    res = auth_client(staff_a).get(f"{URL}facets/")
+
+    assert res.status_code == 200
+    assert res.json()["data"] == {
+        "industries": ["Hospitality", "Travel"],
+        "countries": ["India", "Sri Lanka"],
+    }
+
+
+def test_facets_require_authentication(api_client):
+    assert api_client.get(f"{URL}facets/").status_code == 401
