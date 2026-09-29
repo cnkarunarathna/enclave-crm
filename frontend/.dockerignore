@@ -1,0 +1,10 @@
+# Keep the build context small; the image installs its own node_modules.
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+.husky/
+Dockerfile
+.dockerignore

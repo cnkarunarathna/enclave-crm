@@ -1,0 +1,73 @@
+# Production-style stack, locally: gunicorn behind nginx, prod settings, no source mounts.
+#   docker compose -f docker-compose.prod.yml up --build -d   ->  http://localhost:8080
+# Needs DJANGO_SECRET_KEY (and POSTGRES_*) in the root .env; see .env.example.
+# A separate project name keeps its database and containers apart from the dev stack.
+name: crm-prod
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-crm}
+      POSTGRES_USER: ${POSTGRES_USER:-crm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    # No published port: only the backend talks to the database.
+
+  backend:
+    build: ./backend # default target: slim non-root gunicorn image
+    # Optional: reuses backend/.env for S3 settings (USE_S3, bucket, region, keys).
+    env_file:
+      - path: backend/.env
+        required: false
+    # These win over backend/.env.
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      # Passwords with special characters must be URL-encoded here.
+      DATABASE_URL: postgres://${POSTGRES_USER:-crm}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-crm}
+      # This local stack has no TLS. Behind a real HTTPS load balancer, leave it True.
+      DJANGO_SECURE_SSL_REDIRECT: ${DJANGO_SECURE_SSL_REDIRECT:-False}
+      TRUSTED_PROXY_COUNT: "1" # nginx
+      API_DOCS_ENABLED: "False"
+      LOG_FORMAT: json
+      DJANGO_MIGRATE: "1"
+    volumes:
+      - media:/app/media # logos when USE_S3=False
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend # VITE_API_BASE_URL defaults to /api/v1 (same origin)
+    ports:
+      - "8080:80"
+    volumes:
+      - media:/srv/media:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  media:

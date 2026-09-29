@@ -1,5 +1,6 @@
-# Local development stack. Phase 0 ships the database only; backend and
-# frontend services are added in phase 8 (run them natively until then).
+# Development stack.
+#   docker compose up --build   -> db + backend (runserver) + frontend (Vite), hot reload
+#   make up                     -> db only, for running backend/frontend natively (hybrid)
 services:
   db:
     image: postgres:16-alpine
@@ -13,6 +14,41 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      target: dev
+    env_file:
+      - path: backend/.env
+        required: false
+    environment:
+      # Inside the compose network the database is "db" on its normal port.
+      DATABASE_URL: postgres://${POSTGRES_USER:-crm}:${POSTGRES_PASSWORD:-crm}@db:5432/${POSTGRES_DB:-crm}
+      DJANGO_MIGRATE: "1"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app # source bind mount: runserver reloads on save
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: node:24-alpine
+    working_dir: /app
+    environment:
+      HUSKY: "0" # git hooks belong to the host checkout, not the container
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      # The container's own node_modules (Linux builds of native packages),
+      # kept separate from the host's.
+      - /app/node_modules
+    depends_on:
+      - backend
 
 volumes:
   pgdata:
