@@ -922,10 +922,10 @@ ADR-lite entries for every row in §3 plus any deviation. AWS doc contains §10'
 - **Done when:** `make seed` then login works as all six users; Swagger renders; `make test` green.
 
 ### Phase 6: Frontend foundation (~1.5 h)
-- [ ] `api/` layer (client, tokenStore, errors, types, per-resource modules), `AuthContext`, `ToastContext`
-- [ ] Router + `ProtectedRoute` + `RoleGate` + `AppLayout`
-- [ ] UI kit: Button, Badge, Modal, ConfirmDialog, FormField, Spinner, ErrorBanner, EmptyState, DataTable, Pagination, SearchInput
-- [ ] Login page working end-to-end (login, refresh-on-401, logout, session restore)
+- [x] `api/` layer (client, tokenStore, errors, types, per-resource modules), `AuthContext`, `ToastContext`
+- [x] Router + `ProtectedRoute` + `RoleGate` + `AppLayout`
+- [x] UI kit: Button, Badge, Modal, ConfirmDialog, FormField, Spinner, ErrorBanner, EmptyState, DataTable, Pagination, SearchInput
+- [x] Login page working end-to-end (login, refresh-on-401, logout, session restore)
 - **Done when:** you can log in/out, reload and stay logged in, and an expired access token refreshes transparently.
 
 ### Phase 7: Frontend pages (~4 h)
