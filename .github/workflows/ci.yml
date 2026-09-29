@@ -109,3 +109,29 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  docker:
+    name: Docker (build images, smoke-test prod stack)
+    runs-on: ubuntu-latest
+    env:
+      # Dummy values: only for this throwaway stack, never deployed.
+      POSTGRES_PASSWORD: ci-only-password
+      DJANGO_SECRET_KEY: ci-only-dummy-secret-key-that-is-long-enough-for-the-check-0123456789
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build and start the production-style stack
+        run: docker compose -f docker-compose.prod.yml up --build --detach --wait
+
+      - name: Smoke test through nginx
+        run: |
+          curl -fsS http://localhost:8080/api/v1/health/
+          curl -fsS http://localhost:8080/ | grep -q 'id="root"'
+          curl -fsS http://localhost:8080/companies/1 | grep -q 'id="root"'   # SPA fallback
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/v1/companies/)" = 401
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/v1/docs/)" = 404
+
+      - name: Show container logs
+        if: failure()
+        run: docker compose -f docker-compose.prod.yml logs

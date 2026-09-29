@@ -939,10 +939,10 @@ ADR-lite entries for every row in §3 plus any deviation. AWS doc contains §10'
 - Commits per page: `feat(ui): companies page with filters and pagination`, etc.
 
 ### Phase 8: Production readiness & CI (~1.5 h)
-- [ ] `backend/Dockerfile`, `frontend/Dockerfile` + `nginx.conf`, `docker-compose.prod.yml`, `.dockerignore`s
-- [ ] `prod.py` hardening verified with `manage.py check --deploy`
-- [ ] GitHub Actions CI green on `main` _(workflow added early, before Phase 3; runs on PRs into `main` + pushes to `main`)_
-- [ ] Fresh-clone test: clone into a new folder, follow README exactly, everything works
+- [x] `backend/Dockerfile`, `frontend/Dockerfile` + `nginx.conf`, `docker-compose.prod.yml`, `.dockerignore`s _(nginx config lives in `frontend/nginx/`; dev compose also runs backend + frontend)_
+- [x] `prod.py` hardening verified with `manage.py check --deploy`
+- [x] GitHub Actions CI green on `master` _(branch is `master`; green as of 2026-09-29. The new `docker` job, which builds the images and smoke-tests the prod stack, first runs on the next PR)_
+- [x] Fresh-clone test: clone into a new folder, follow README exactly, everything works _(2026-09-29: Docker, native and prod-style paths)_
 - **Done when:** CI badge green; `docker compose -f docker-compose.prod.yml up --build` serves the app.
 
 ### Phase 9: Documentation (~1.25 h)

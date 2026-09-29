@@ -145,3 +145,28 @@ Each entry: the decision, the alternatives considered, and why. Locked decisions
 - **Decision:** Pages behind login are loaded with React Router `lazy` routes.
 - **Why:** The single bundle had grown past Vite's 500 kB warning. With lazy routes the login screen
   loads ~150 kB gzipped and each page fetches its own small chunk on first visit.
+
+## D-017: One origin in the production-style stack (nginx proxies the API)
+
+- **Decision:** In `docker-compose.prod.yml` the frontend's nginx serves the built app and proxies
+  `/api/`, `/admin/` and `/static/` to gunicorn. The app is built with `VITE_API_BASE_URL=/api/v1`,
+  so the browser only talks to one origin. The backend has no published port, and
+  `TRUSTED_PROXY_COUNT=1` makes rate limiting use the client IP that nginx saw.
+- **Alternatives:** Publish the API on its own port or host and allow the frontend origin with CORS
+  (the dev setup does this: `localhost:5173` calls `localhost:8000`).
+- **Why:** No CORS preflights, one place for TLS and security headers (CSP, `X-Frame-Options`),
+  and the API is not reachable except through the proxy. A split-origin deployment still works:
+  build the frontend with a full `VITE_API_BASE_URL` and set `CORS_ALLOWED_ORIGINS` on the API.
+
+## D-018: Shared database cache for rate limiting in prod
+
+- **Decision:** `prod.py` sets `CACHES` from `CACHE_URL`, defaulting to Django's database cache
+  (`dbcache://django_cache`); `entrypoint.sh` runs `createcachetable`. Dev and tests keep the
+  in-memory cache.
+- **Alternatives:** The default in-process cache, or Redis.
+- **Why:** DRF throttles store their counters in the cache. With the in-process cache each gunicorn
+  worker counted separately: a 40-request burst let 28 login attempts through instead of 10. The
+  database cache is shared by all workers and containers and needs no new service or dependency;
+  `CACHE_URL=redis://...` (plus the `redis` package) swaps it later without code changes. DRF's
+  throttle is read-then-write, so parallel bursts can still overshoot slightly (12 of 40 in the
+  same test); acceptable for a login limiter.
