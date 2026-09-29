@@ -43,6 +43,7 @@ ACTION_TO_VERB = {
     "update": "update",
     "partial_update": "update",
     "destroy": "delete",
+    "facets": "read",  # GET /companies/facets/ (filter options)
 }
 
 

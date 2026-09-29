@@ -96,3 +96,52 @@ Each entry: the decision, the alternatives considered, and why. Locked decisions
   20-line `JsonFormatter` in `apps/core/log_formatters.py` instead of a logging library.
 - **Why:** Log platforms can filter JSON by level, logger and status code without parsing free text;
   a small formatter avoids adding a dependency.
+
+## D-012: shadcn/ui (Radix) for UI components
+
+- **Decision:** UI primitives come from shadcn/ui (`radix` base, `nova` style, neutral colors),
+  copied into `frontend/src/components/ui/` by the shadcn CLI. Our reusable components
+  (`common/`, `data/`, `layout/`, `auth/`) are built from them.
+- **Added dependencies** (requested by the repo owner; not in plan §4.2):
+  `radix-ui` (accessible dialogs, menus, drawers), `class-variance-authority` (component
+  variants), `cn` (shadcn's class-name merger, replaces clsx + tailwind-merge), `sonner`
+  (toasts), `tw-animate-css` (animations), `@fontsource-variable/geist` (self-hosted font), and
+  `shadcn` as a dev dependency (its Tailwind CSS preset, used at build time).
+- **Removed:** `next-themes` (added by the sonner component to follow a theme switcher the app
+  doesn't have); toasts use the light theme.
+- **Why:** Accessible, keyboard-friendly components (focus traps, ARIA) without writing them by
+  hand; the code lives in the repo, so it can be read and changed like our own.
+- **Lint:** `react-refresh/only-export-components` is off for `src/components/ui/**` only, because
+  shadcn files export style helpers (e.g. `buttonVariants`) next to components.
+
+## D-013: `sonner` toasts instead of a hand-written ToastContext
+
+- **Decision:** Plan §11.1 lists a `ToastContext`. We use shadcn's `sonner` `<Toaster />` once in
+  `App.tsx` and call `toast.success()` / `toast.error()` anywhere.
+- **Why:** sonner already keeps its own global toast queue, so a React context around it would
+  add code without adding behavior.
+
+## D-014: Only login and refresh skip the refresh-and-retry
+
+- **Decision:** The axios interceptor retries a 401 after refreshing for every endpoint except
+  `/auth/login/` and `/auth/refresh/`.
+- **Alternatives:** Plan §11.2 skips all `/auth/*` URLs.
+- **Why:** `/auth/me/` (session restore) and `/auth/logout/` are ordinary authenticated calls; an
+  expired access token there should refresh transparently too. Login and refresh are the auth
+  flow itself, and retrying them would loop.
+
+## D-015: `GET /companies/facets/` for the industry and country filters
+
+- **Decision:** A read-only viewset action returns the distinct, non-empty industries and countries
+  of the user's organization (soft-deleted companies excluded). `ACTION_TO_VERB` maps `facets` to
+  `read`, so every role that can list companies can use it.
+- **Alternatives:** Free-text filter inputs (the API filters with `iexact`, so users would have to
+  type exact values), or deriving options from the dashboard's top-8 industries (incomplete).
+- **Why:** Dropdowns with real values are the usable form of an exact-match filter; the endpoint is
+  a few lines and follows the same tenant scoping and RBAC as the rest of the API.
+
+## D-016: Route-level code splitting
+
+- **Decision:** Pages behind login are loaded with React Router `lazy` routes.
+- **Why:** The single bundle had grown past Vite's 500 kB warning. With lazy routes the login screen
+  loads ~150 kB gzipped and each page fetches its own small chunk on first visit.

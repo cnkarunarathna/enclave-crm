@@ -4,7 +4,9 @@ Tenant scoping and RBAC come from OrganizationScopedViewSet.
 """
 
 from django.db.models import Count, Q
-from rest_framework import status
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core.viewsets import OrganizationScopedViewSet
@@ -55,6 +57,26 @@ class CompanyViewSet(OrganizationScopedViewSet):
     def destroy(self, request, *args, **kwargs):
         services.delete_company(user=request.user, company=self.get_object())
         return deleted_response("Company deleted.")
+
+    @extend_schema(
+        responses=inline_serializer(
+            "CompanyFacets",
+            {
+                "industries": serializers.ListField(child=serializers.CharField()),
+                "countries": serializers.ListField(child=serializers.CharField()),
+            },
+        )
+    )
+    @action(detail=False, methods=["get"], pagination_class=None, filter_backends=[])
+    def facets(self, request):
+        """Distinct industries and countries in use, for the filter dropdowns."""
+        companies = Company.objects.for_org(request.user.organization_id)
+
+        def distinct(field):
+            values = companies.exclude(**{field: ""}).values_list(field, flat=True)
+            return list(values.order_by(field).distinct())
+
+        return Response({"industries": distinct("industry"), "countries": distinct("country")})
 
     def _representation(self, company):
         # Re-read through get_queryset() so contacts_count is included.

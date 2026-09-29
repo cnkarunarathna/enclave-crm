@@ -922,19 +922,19 @@ ADR-lite entries for every row in §3 plus any deviation. AWS doc contains §10'
 - **Done when:** `make seed` then login works as all six users; Swagger renders; `make test` green.
 
 ### Phase 6: Frontend foundation (~1.5 h)
-- [ ] `api/` layer (client, tokenStore, errors, types, per-resource modules), `AuthContext`, `ToastContext`
-- [ ] Router + `ProtectedRoute` + `RoleGate` + `AppLayout`
-- [ ] UI kit: Button, Badge, Modal, ConfirmDialog, FormField, Spinner, ErrorBanner, EmptyState, DataTable, Pagination, SearchInput
-- [ ] Login page working end-to-end (login, refresh-on-401, logout, session restore)
+- [x] `api/` layer (client, tokenStore, errors, types, per-resource modules), `AuthContext`, `ToastContext`
+- [x] Router + `ProtectedRoute` + `RoleGate` + `AppLayout`
+- [x] UI kit: Button, Badge, Modal, ConfirmDialog, FormField, Spinner, ErrorBanner, EmptyState, DataTable, Pagination, SearchInput
+- [x] Login page working end-to-end (login, refresh-on-401, logout, session restore)
 - **Done when:** you can log in/out, reload and stay logged in, and an expired access token refreshes transparently.
 
 ### Phase 7: Frontend pages (~4 h)
-- [ ] Companies page (search/filter/order/pagination in URL, create/edit/delete, logo upload)
-- [ ] Company detail with nested contacts (search, pagination, CRUD, field errors)
-- [ ] Activity log page (filters, pagination, changes expander)
-- [ ] Dashboard (cards, industry bars, recent activity)
-- [ ] Loading/error/empty states everywhere; role-based hiding; toasts
-- [ ] Optional Vitest tests
+- [x] Companies page (search/filter/order/pagination in URL, create/edit/delete, logo upload)
+- [x] Company detail with nested contacts (search, pagination, CRUD, field errors)
+- [x] Activity log page (filters, pagination, changes expander)
+- [x] Dashboard (cards, industry bars, recent activity)
+- [x] Loading/error/empty states everywhere; role-based hiding; toasts
+- [x] Optional Vitest tests
 - **Done when:** the full demo script in §15.5 can be performed without touching the API manually (except the forbidden-call demo).
 - Commits per page: `feat(ui): companies page with filters and pagination`, etc.
 

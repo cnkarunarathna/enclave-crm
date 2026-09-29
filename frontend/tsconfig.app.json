@@ -21,7 +21,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Imports like "@/components/ui/button" */
+    "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src"]
 }
